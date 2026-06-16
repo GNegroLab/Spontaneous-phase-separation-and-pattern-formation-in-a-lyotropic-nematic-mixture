@@ -302,30 +302,3 @@ def linear_fit(Apar, Bpar, data, outname, visualization=False):
         ax.set_zlabel(r'$W_c^\parallel$')
         plt.title('Critical Anchoring: Data vs Linear Fit')
         plt.show()
-        
-        
-def smooth_data_log_savgol(x_coords, y_coords,window_length=7, noise_par=0.7, polyorder=1,num_interp_points=None,mode='nearest'):
-
-    log_x_sorted = np.log(x_coords)
-    log_y_sorted = np.log(y_coords)
-
-    if num_interp_points is None:
-        num_interp_points = len(log_x_sorted)
-    elif num_interp_points < 2: 
-        num_interp_points = max(2, len(log_x_sorted))
-
-    num_interp_points = max(min(num_interp_points, len(log_x_sorted) * 5), window_length, 2)
-    log_x_uniform = np.linspace(log_x_sorted.min(), log_x_sorted.max(), num=num_interp_points)
-
-    interp_func = interp1d(log_x_sorted, log_y_sorted, kind='linear', fill_value="extrapolate")
-    log_y = interp_func(log_x_uniform)
-
-    log_y_smoothed = savgol_filter(log_y, window_length=window_length, polyorder=polyorder, mode=mode)
-
-    interp_back_func = interp1d(log_x_uniform, log_y_smoothed, kind='linear', fill_value="extrapolate")
-    log_y_smoothed_at_original_log_x = interp_back_func(log_x_sorted)
-
-    y_smoothed_final_sorted = np.exp(log_y_smoothed_at_original_log_x)
-    y_coords = (noise_par*y_smoothed_final_sorted+(1-noise_par)*y_coords)
-
-    return x_coords, y_coords
